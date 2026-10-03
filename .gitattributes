@@ -18,7 +18,7 @@
 # 批处理必须是 CRLF，且必须保持纯 ASCII（见 README 第九节的坑）
 *.bat text eol=crlf
 
-# PowerShell 脚本按纯 ASCII 维护
+# PowerShell 脚本按纯 ASCII 维护，CRLF 检出
 *.ps1 text eol=crlf
 
 # 语言统计时排除生成产物
