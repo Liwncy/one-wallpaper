@@ -1,0 +1,57 @@
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# ---- 运行时数据（抓取结果与图片缓存）----
+cache/
+!cache/.gitkeep
+
+# ---- 生成产物（每日壁纸 PNG）----
+# 保留目录结构，但不提交历史图，避免仓库持续膨胀。
+# 想让 GitHub 上的 README 有图可看，就把下面两行注释掉，
+# 只提交 output/today.png（在 .gitattributes 里已标记为二进制）。
+output/*
+!output/.gitkeep
+
+# 例外：如果确实想把最新一张作为展示图提交，取消下一行注释
+# !output/today.png
+
+# ---- 日志 ----
+logs/
+!logs/.gitkeep
+
+# ---- Lively 运行时烘焙出的图片与快照 ----
+# index.html / LivelyInfo.json 是源文件要提交；
+# 下面这些是 build_lively.py 每次跑出来的产物。
+lively/data.js
+lively/wife.jpg
+lively/bg.jpg
+lively/thumbnail.jpg
+
+# ---- 本机特定的配置 ----
+# config.json 是模板，会提交；本地覆盖放这里
+config.local.json
+
+# ---- AI 助手的工作目录（自动化记录、会话记忆等，与项目无关）----
+.workbuddy/
+.claude/
+.cursor/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

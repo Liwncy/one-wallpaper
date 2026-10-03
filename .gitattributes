@@ -1,0 +1,26 @@
+# 自动识别为二进制，不做行尾转换、不做 diff 文本处理
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.ttf binary
+*.ttc binary
+*.whl binary
+
+# 避免 Windows 与 Linux 之间来回转换行尾
+*.py text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+
+# 批处理必须是 CRLF，且必须保持纯 ASCII（见 README 第九节的坑）
+*.bat text eol=crlf
+
+# PowerShell 脚本按纯 ASCII 维护
+*.ps1 text eol=crlf
+
+# 语言统计时排除生成产物
+output/* linguist-generated=true
+cache/* linguist-generated=true

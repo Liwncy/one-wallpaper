@@ -1,0 +1,80 @@
+{
+  "city": "潍坊",
+  "zodiac": "处女",
+  "wife_id_mode": "today",
+
+  "resolution": [2560, 1440],
+  "ai_news_count": 7,
+  "weather_forecast_days": 3,
+
+  "theme": {
+    "bg": "#0D1015",
+    "panel": "#FFFFFF",
+    "panel_border": "#FFFFFF",
+    "text": "#EAEDF3",
+    "text_dim": "#9AA4B5",
+    "text_hint": "#6B7480",
+    "accent": "#5B9BE8",
+    "accent_dim": "#8FA6C4",
+    "warn": "#E8B04B",
+    "ok": "#5DCAA5",
+    "danger": "#E87B6B",
+    "bg_blur": 30,
+    "bg_dim": 168,
+    "panel_alpha": 12,
+    "panel_border_alpha": 30,
+    "label_alpha": 120
+  },
+
+  "apis": {
+    "ai_news": "https://api.pearapi.ai/api/latest_ai_consultative",
+    "today_wife": "https://api.pearapi.ai/api/today_wife",
+    "dujitang": "https://api.pearapi.ai/api/dujitang",
+    "xzys": "https://api.pearapi.ai/api/xzys/"
+  },
+
+  "sixty_s": {
+    "instances": [
+      "https://60s.crystelf.top",
+      "https://60s.7se.cn",
+      "https://60s.zellon.top",
+      "https://api.elysiayanyu.top",
+      "https://60s.okbaike.com",
+      "https://60s.mizhoubaobei.top",
+      "https://60s.superjeason.qzz.io",
+      "https://60s.viki.moe"
+    ],
+    "paths": {
+      "moyu": "/v2/moyu",
+      "weather": "/v2/weather/forecast"
+    },
+    "min_interval": 2.5
+  },
+
+  "fallback_weather": {
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "latitude": 36.7311,
+    "longitude": 119.1732
+  },
+
+  "request": {
+    "timeout": 20,
+    "retries": 3,
+    "retry_delay": 3,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+  },
+
+  "schedule": {
+    "daily_time": "06:00",
+    "task_name": "DailyWallpaper"
+  },
+
+  "output": {
+    "static_dir": "output",
+    "cache_dir": "cache",
+    "log_dir": "logs",
+    "keep_days": 14,
+    "set_wallpaper": true,
+    "wallpaper_style": "Fill"
+  }
+}

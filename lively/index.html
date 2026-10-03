@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>每日信息壁纸</title>
+<script src="data.js"></script>
+<style>
+:root{
+  --s: calc(100vw / 2560);
+  --bg:#0D1015; --panel:rgba(22,27,36,.66); --border:rgba(43,51,65,.55);
+  --text:#EAEDF3; --dim:#9AA4B5; --hint:#6B7480;
+  --accent:#5B9BE8; --accent-dim:#8FA6C4; --warn:#E8B04B; --ok:#5DCAA5; --danger:#E87B6B;
+  --r: calc(var(--s) * 22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  color:var(--text);-webkit-font-smoothing:antialiased}
+
+#bg{position:absolute;inset:0;background-size:cover;background-position:center;
+  filter:blur(calc(var(--s) * 28)) brightness(.42);transform:scale(1.06)}
+#bgdim{position:absolute;inset:0;background:rgba(13,16,21,.62)}
+
+#portrait{position:absolute;left:0;top:0;width:calc(var(--s) * 620);height:100%;
+  object-fit:cover;object-position:50% 42%}
+#portrait-fade{position:absolute;left:0;top:0;width:calc(var(--s) * 620);height:100%;
+  background:linear-gradient(90deg,rgba(13,16,21,0) 52%,rgba(13,16,21,.75) 82%,var(--bg) 100%),
+             linear-gradient(0deg,rgba(13,16,21,.55) 0%,rgba(13,16,21,0) 22%)}
+
+#content{position:absolute;left:calc(var(--s) * 700);top:calc(var(--s) * 76);
+  width:calc(var(--s) * 1780);height:calc(var(--s) * 1304);
+  display:flex;flex-direction:column;gap:calc(var(--s) * 32)}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  backdrop-filter:blur(calc(var(--s) * 6));padding:calc(var(--s) * 38) calc(var(--s) * 44);
+  position:relative;overflow:hidden}
+
+.row{display:flex;gap:calc(var(--s) * 36)}
+.hdr{height:calc(var(--s) * 168);gap:calc(var(--s) * 36)}
+.hdr .date{width:calc(var(--s) * 800);padding:calc(var(--s) * 26) calc(var(--s) * 44)}
+.hdr .wx{flex:1;padding:calc(var(--s) * 24) calc(var(--s) * 44)}
+.news{height:calc(var(--s) * 604)}
+.bottom{height:calc(var(--s) * 468);gap:calc(var(--s) * 40)}
+.bottom .quote{width:calc(var(--s) * 860);padding:calc(var(--s) * 36) calc(var(--s) * 44)}
+.bottom .zodiac{flex:1;padding:calc(var(--s) * 36) calc(var(--s) * 44)}
+
+.lbl{font-size:calc(var(--s) * 24);color:var(--hint)}
+.datenum{font-size:calc(var(--s) * 62);font-weight:700;line-height:1}
+.wk{font-size:calc(var(--s) * 34);color:var(--dim);margin-left:calc(var(--s) * 24)}
+.lunar{font-size:calc(var(--s) * 28);color:var(--dim)}
+.tag{font-size:calc(var(--s) * 28);color:var(--warn)}
+
+.wxcity{font-size:calc(var(--s) * 28);color:var(--dim)}
+.wxtemp{font-size:calc(var(--s) * 54);font-weight:700;color:var(--accent);line-height:1}
+.wxcond{font-size:calc(var(--s) * 36)}
+.wxrange{font-size:calc(var(--s) * 30);color:var(--dim)}
+.wxaqi{font-size:calc(var(--s) * 30);position:absolute;right:calc(var(--s) * 44);top:calc(var(--s) * 78)}
+.wxsub{font-size:calc(var(--s) * 24);color:var(--hint)}
+
+.ntitle{font-size:calc(var(--s) * 36);font-weight:700}
+.ncount{font-size:calc(var(--s) * 26);color:var(--accent);margin-left:calc(var(--s) * 20)}
+.nmeta{font-size:calc(var(--s) * 24);color:var(--hint);position:absolute;
+  right:calc(var(--s) * 44);top:calc(var(--s) * 44)}
+.nlist{display:flex;flex-direction:column;gap:calc(var(--s) * 36);margin-top:calc(var(--s) * 40)}
+.nitem{display:flex;align-items:center;gap:calc(var(--s) * 26)}
+.nidx{font-size:calc(var(--s) * 26);font-weight:700;color:var(--accent-dim);
+  width:calc(var(--s) * 60);flex:none}
+.ntxt{font-size:calc(var(--s) * 33);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.quote-txt{font-size:calc(var(--s) * 37);font-weight:700;line-height:1.42;
+  margin-top:calc(var(--s) * 24)}
+.divider{height:1px;background:rgba(43,51,65,.7);margin:calc(var(--s) * 38) 0 0}
+.moyu-txt{font-size:calc(var(--s) * 27);color:var(--dim);line-height:1.45;
+  margin-top:calc(var(--s) * 20)}
+.bars{display:flex;gap:calc(var(--s) * 30);position:absolute;
+  left:calc(var(--s) * 44);right:calc(var(--s) * 44);bottom:calc(var(--s) * 44)}
+.bar{flex:1}
+.bar-top{display:flex;justify-content:space-between;font-size:calc(var(--s) * 23);
+  color:var(--hint);margin-bottom:calc(var(--s) * 12)}
+.bar-top b{font-weight:400}
+.track{height:calc(var(--s) * 8);border-radius:99px;background:rgba(107,116,128,.24);overflow:hidden}
+.fill{height:100%;border-radius:99px}
+
+.ztitle{font-size:calc(var(--s) * 30);font-weight:700}
+.ztime{font-size:calc(var(--s) * 24);color:var(--hint);position:absolute;
+  right:calc(var(--s) * 44);top:calc(var(--s) * 44)}
+.zshort{font-size:calc(var(--s) * 40);font-weight:700;color:var(--accent);
+  margin-top:calc(var(--s) * 26)}
+.ztext{font-size:calc(var(--s) * 26);color:var(--dim);line-height:1.4;
+  margin-top:calc(var(--s) * 30);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.zidx{display:flex;gap:calc(var(--s) * 40);position:absolute;
+  left:calc(var(--s) * 44);right:calc(var(--s) * 44);bottom:calc(var(--s) * 114)}
+.zidx .bar{flex:1}
+.zlucky{position:absolute;left:calc(var(--s) * 44);bottom:calc(var(--s) * 36);
+  font-size:calc(var(--s) * 24);color:var(--dim)}
+
+#footer{position:absolute;right:calc(var(--s) * 124);bottom:calc(var(--s) * 16);
+  display:flex;gap:calc(var(--s) * 26);font-size:calc(var(--s) * 22);color:var(--ok)}
+#footer span.bad{color:var(--danger)}
+#footer span.warn2{color:var(--warn)}
+#clock{position:absolute;left:calc(var(--s) * 700);bottom:calc(var(--s) * 16);
+  font-size:calc(var(--s) * 22);color:var(--hint)}
+</style>
+</head>
+<body>
+<div id="bg"></div><div id="bgdim"></div>
+<img id="portrait" alt="">
+<div id="portrait-fade"></div>
+
+<div id="content">
+  <div class="row hdr">
+    <div class="panel date">
+      <div style="display:flex;align-items:baseline">
+        <span class="datenum" id="d-num">--</span><span class="wk" id="d-wk"></span>
+      </div>
+      <div class="lunar" id="d-lunar" style="margin-top:calc(var(--s)*22)"></div>
+      <div class="tag" id="d-tag" style="position:absolute;right:calc(var(--s)*44);bottom:calc(var(--s)*28)"></div>
+    </div>
+    <div class="panel wx">
+      <div class="wxcity" id="w-city"></div>
+      <div style="display:flex;align-items:baseline;gap:calc(var(--s)*18);margin-top:calc(var(--s)*16)">
+        <span class="wxtemp" id="w-temp">--</span>
+        <span class="wxcond" id="w-cond"></span>
+        <span class="wxrange" id="w-range"></span>
+      </div>
+      <div class="wxsub" id="w-sub" style="position:absolute;left:calc(var(--s)*44);bottom:calc(var(--s)*26)"></div>
+      <div class="wxaqi" id="w-aqi"></div>
+    </div>
+  </div>
+
+  <div class="panel news">
+    <div style="display:flex;align-items:baseline">
+      <span class="ntitle">AI 资讯</span><span class="ncount" id="n-count"></span>
+    </div>
+    <div class="nmeta" id="n-meta"></div>
+    <div class="nlist" id="n-list"></div>
+  </div>
+
+  <div class="row bottom">
+    <div class="panel quote">
+      <div class="lbl">毒鸡汤</div>
+      <div class="quote-txt" id="q-duji"></div>
+      <div class="divider"></div>
+      <div class="lbl" style="margin-top:calc(var(--s)*34)">摸鱼语录</div>
+      <div class="moyu-txt" id="q-moyu"></div>
+      <div class="bars" id="q-bars"></div>
+    </div>
+    <div class="panel zodiac">
+      <div class="ztitle" id="z-title"></div>
+      <div class="ztime" id="z-time"></div>
+      <div class="zshort" id="z-short"></div>
+      <div class="ztext" id="z-text"></div>
+      <div class="zidx" id="z-idx"></div>
+      <div class="zlucky" id="z-lucky"></div>
+    </div>
+  </div>
+</div>
+
+<div id="clock"></div>
+<div id="footer"></div>
+
+<script>
+const CFG = Object.assign({
+  ai: 'https://api.pearapi.ai/api/latest_ai_consultative',
+  wife: 'https://api.pearapi.ai/api/today_wife',
+  duji: 'https://api.pearapi.ai/api/dujitang',
+  xzys: 'https://api.pearapi.ai/api/xzys/',
+  zodiac: '处女',
+  city: '潍坊',
+  instances: ['https://60s.crystelf.top'],
+  refreshMs: 30 * 60 * 1000
+}, window.WALLPAPER_CONFIG || {});
+
+const $ = id => document.getElementById(id);
+const esc = s => (s ?? '').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function getJSON(url, timeout = 15000) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), timeout);
+  try {
+    const r = await fetch(url, { signal: ac.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+async function pick60s() {
+  for (const host of CFG.instances) {
+    try {
+      const d = await getJSON(host + '/v2/moyu', 8000);
+      if (d && d.code === 200) return host;
+    } catch (e) { /* 试下一个实例 */ }
+  }
+  return null;
+}
+
+function bar(name, pct, color) {
+  if (pct === null || pct === undefined) return '';
+  return `<div class="bar">
+    <div class="bar-top"><b>${esc(name)}</b><b style="color:${color}">${pct}%</b></div>
+    <div class="track"><div class="fill" style="width:${Math.max(0, Math.min(100, pct))}%;background:${color}"></div></div>
+  </div>`;
+}
+
+function render(d, status) {
+  if (!d) return;
+
+  if (d.ai_news && d.ai_news.image) {
+    $('bg').style.backgroundImage = `url("${d.ai_news.image}")`;
+  }
+  if (d.wife && d.wife.image) {
+    $('portrait').src = d.wife.image;
+    $('portrait').onerror = () => { $('portrait').style.display = 'none'; };
+  } else {
+    $('portrait').style.display = 'none';
+  }
+
+  const cal = d.calendar || {}, cd = cal.date || {}, lun = cd.lunar || {};
+  let greg = d.date || '';
+  let md = greg;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(greg);
+  if (m) md = `${+m[2]}月${+m[3]}日`;
+  $('d-num').textContent = md;
+  $('d-wk').textContent = cd.weekday || '';
+
+  let lunar = `农历${lun.monthCN || ''}${lun.dayCN || ''}`;
+  if (lun.yearGanZhi) lunar += ` · ${lun.yearGanZhi}年`;
+  if (lun.zodiac) lunar += ` ${lun.zodiac}`;
+  if (cal.today && cal.today.solarTerm) lunar += ` · ${cal.today.solarTerm}`;
+  $('d-lunar').textContent = lunar;
+
+  const nh = cal.nextHoliday;
+  $('d-tag').textContent = (nh && nh.until != null) ? `距${nh.name} ${nh.until} 天` : '';
+
+  const wx = d.weather || {}, cur = wx.current || {}, td = wx.today || {};
+  $('w-city').textContent = wx.location || CFG.city;
+  $('w-temp').textContent = cur.temperature != null ? cur.temperature + '°' : '--';
+  $('w-cond').textContent = cur.condition || td.day_condition || '';
+  $('w-range').textContent = (td.min_temperature != null && td.max_temperature != null)
+    ? `${td.min_temperature}° ~ ${td.max_temperature}°` : '';
+  const aqiEl = $('w-aqi');
+  if (td.aqi != null) {
+    const col = td.aqi <= 50 ? 'var(--ok)' : (td.aqi <= 100 ? 'var(--warn)' : 'var(--danger)');
+    aqiEl.textContent = `AQI ${td.aqi} ${td.air_quality || ''}`.trim();
+    aqiEl.style.color = col;
+  } else aqiEl.textContent = '';
+  const bits = [];
+  if (cur.wind_direction) bits.push(`${cur.wind_direction}${cur.wind_power || ''}级`);
+  else if (td.day_wind_direction) bits.push(`${td.day_wind_direction}${td.day_wind_power || ''}级`);
+  if (wx.sunrise) bits.push(`日出 ${wx.sunrise}`);
+  if (wx.sunset) bits.push(`日落 ${wx.sunset}`);
+  $('w-sub').textContent = bits.join(' · ');
+
+  const items = (d.ai_news && d.ai_news.items) || [];
+  $('n-count').textContent = `TOP ${items.length}`;
+  $('n-meta').textContent = items.length
+    ? `数据源 ${items[0].source || '-'} · ${(d.generated_at || '').slice(0, 16).replace('T', ' ')}` : '';
+  $('n-list').innerHTML = items.map((it, i) => `<div class="nitem">
+    <span class="nidx">${String(i + 1).padStart(2, '0')}</span>
+    <span class="ntxt">${esc(it.title)}</span></div>`).join('');
+
+  $('q-duji').textContent = d.dujitang || '';
+  $('q-moyu').textContent = d.moyu_quote || '';
+  const p = cal.progress || {};
+  $('q-bars').innerHTML =
+    bar('本周', p.week && p.week.percentage, 'var(--accent)') +
+    bar('本月', p.month && p.month.percentage, 'var(--ok)') +
+    bar('今年', p.year && p.year.percentage, 'var(--warn)');
+
+  const z = d.zodiac || {};
+  $('z-title').textContent = `${z.sign || ''}座 · 今日运势`;
+  $('z-time').textContent = z.time || '';
+  $('z-short').textContent = z.shortcomment || '';
+  $('z-text').textContent = z.alltext || '';
+  const num = v => { const n = parseInt(String(v || '').replace('%', ''), 10); return isNaN(n) ? null : n; };
+  $('z-idx').innerHTML =
+    bar('健康', num(z.health), 'var(--ok)') + bar('讨论', num(z.discuss), 'var(--accent)');
+  const lucky = [];
+  if (z.luckycolor) lucky.push(`幸运色 ${z.luckycolor}`);
+  if (z.luckynumber) lucky.push(`幸运数字 ${z.luckynumber}`);
+  if (z.luckyconstellation) lucky.push(`幸运星座 ${z.luckyconstellation}`);
+  $('z-lucky').textContent = lucky.join('  ·  ');
+
+  const st = status || d.status || {};
+  const meta = { ai_news: '资讯', wife: '老婆', dujitang: '鸡汤', xzys: '星座', calendar: '日历', weather: '天气' };
+  const glyph = { ok: '●', cache: '◐', live: '●', local: '◑', fail: '○' };
+  $('footer').innerHTML = Object.keys(meta).map(k => {
+    const s = st[k] || 'fail';
+    const cls = s === 'ok' || s === 'live' ? '' : (s === 'fail' ? 'bad' : 'warn2');
+    return `<span class="${cls}">${glyph[s] || '○'}${meta[k]}</span>`;
+  }).join('');
+}
+
+function localDate() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+}
+
+async function refresh() {
+  const base = window.WALLPAPER_DATA || {};
+  const out = JSON.parse(JSON.stringify(base));
+  const status = {};
+
+  const today = localDate();
+  const tasks = [
+    ['ai_news', async () => {
+      const r = await getJSON(CFG.ai);
+      if (!r || !r.data) throw new Error('empty');
+      const d = r.data;
+      return { items: (d.models_and_releases || []).slice(0, 7),
+               image: d.image_url, _source: 'live' };
+    }],
+    ['wife', async () => {
+      const r = await getJSON(`${CFG.wife}?id=${today.replace(/-/g, '')}`);
+      if (!r || !r.data) throw new Error('empty');
+      return { role_name: r.data.role_name, image: r.data.image_url, _source: 'live' };
+    }],
+    ['dujitang', async () => {
+      const r = await fetch(CFG.duji, { cache: 'no-store' });
+      return (await r.text()).trim();
+    }],
+    ['xzys', async () => {
+      const r = await getJSON(CFG.xzys + '?xz=' + encodeURIComponent(CFG.zodiac));
+      if (!r || !r.data) throw new Error('empty');
+      return Object.assign({ sign: r.xz || CFG.zodiac, _source: 'live' }, r.data);
+    }]
+  ];
+
+  await Promise.all(tasks.map(async ([key, fn]) => {
+    try {
+      out[key] = await fn();
+      status[key] = 'ok';
+    } catch (e) {
+      status[key] = 'cache';
+    }
+  }));
+
+  try {
+    const host = await pick60s();
+    if (!host) throw new Error('no instance');
+    const [moyu, weather] = await Promise.all([
+      getJSON(host + '/v2/moyu'),
+      getJSON(host + `/v2/weather/forecast?query=${encodeURIComponent(CFG.city)}&days=3`)
+    ]);
+    if (moyu && moyu.code === 200) {
+      const c = Object.assign({}, moyu.data);
+      c._source = 'live';
+      out.calendar = c;
+      out.moyu_quote = moyu.data.moyuQuote;
+      status.calendar = 'ok';
+    } else { status.calendar = 'cache'; }
+    if (weather && weather.code === 200 && weather.data) {
+      out.weather = normWeather(weather.data, today);
+      status.weather = 'ok';
+    } else { status.weather = 'cache'; }
+  } catch (e) {
+    status.calendar = base.calendar ? 'cache' : 'fail';
+    status.weather = base.weather ? 'cache' : 'fail';
+  }
+
+  out.generated_at = new Date().toISOString().slice(0, 19);
+  render(out, status);
+}
+
+function normWeather(w, today) {
+  const h = w.hourly_forecast || [];
+  let cur = null, best = Infinity;
+  const now = Date.now();
+  for (const x of h) {
+    const t = new Date(x.datetime.replace(' ', 'T')).getTime();
+    const gap = Math.abs(t - now);
+    if (gap < best) { best = gap; cur = x; }
+  }
+  const daily = w.daily_forecast || [];
+  const td = daily.find(d => d.date === today) || daily[1] || daily[0] || null;
+  const ss = (w.sunrise_sunset || []).find(s => (s.sunrise || '').startsWith(today))
+          || (w.sunrise_sunset || [])[1] || (w.sunrise_sunset || [])[0] || {};
+  return {
+    location: (w.location && w.location.name) || CFG.city,
+    current: cur ? { temperature: cur.temperature, condition: cur.condition,
+                     wind_direction: cur.wind_direction, wind_power: cur.wind_power } : {},
+    today: td, forecast: daily, aqi: td && td.aqi, air_quality: td && td.air_quality,
+    sunrise: ss.sunrise_desc, sunset: ss.sunset_desc
+  };
+}
+
+function tick() {
+  const n = new Date();
+  $('clock').textContent = `${n.toLocaleDateString('zh-CN')} ${n.toLocaleTimeString('zh-CN', { hour12: false })}`;
+}
+
+render(window.WALLPAPER_DATA || {}, null);
+tick();
+setInterval(tick, 1000);
+refresh();
+setInterval(refresh, CFG.refreshMs);
+</script>
+</body>
+</html>

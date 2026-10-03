@@ -1,0 +1,14 @@
+{
+  "AppVersion": "1.0.0.0",
+  "Title": "每日信息壁纸",
+  "Thumbnail": "thumbnail.jpg",
+  "Preview": "thumbnail.jpg",
+  "Desc": "聚合 AI 资讯、今日老婆、毒鸡汤、星座运势、摸鱼日报、农历与潍坊天气的每日信息壁纸。数据每 30 分钟自动刷新，断网时回退到最近一次快照。",
+  "Author": "Liwncy",
+  "License": "",
+  "Contact": "",
+  "Type": 1,
+  "FileName": "index.html",
+  "Arguments": "",
+  "IsAbsolutePath": false
+}
