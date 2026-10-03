@@ -1,4 +1,4 @@
-# daily-wallpaper
+# one-wallpaper
 
 > 把 AI 资讯、天气、农历、星座运势、摸鱼日报聚合渲染成一张 2560×1440 的桌面仪表盘，每天自动更新。
 
@@ -27,8 +27,8 @@
 ## 快速开始
 
 ```bash
-git clone https://github.com/<你的用户名>/daily-wallpaper.git
-cd daily-wallpaper
+git clone https://github.com/Liwncy/one-wallpaper.git
+cd one-wallpaper
 
 # 建虚拟环境并安装依赖（只有一个包）
 python -m venv .venv
@@ -142,7 +142,7 @@ install_task.bat -Remove
 ## 目录结构
 
 ```
-daily-wallpaper/
+one-wallpaper/
 ├── config.json          全部可调参数（城市、星座、分辨率、配色、接口、实例列表）
 ├── main.py              流水线入口：抓取 → 渲染 → 烘焙 Lively → 下发壁纸 → 清理
 ├── fetch_data.py        6 路数据抓取 + 故障转移 + 缓存降级
