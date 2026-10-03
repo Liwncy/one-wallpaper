@@ -196,13 +196,13 @@ daily-wallpaper/
 
 - **Python 3.9+**（在 3.13 上开发验证）
 - **Pillow**（唯一依赖）
-- **中文字体**：`msyh.ttc` / `msyhbd.ttc`（Windows 自带微软雅黑）
-  - Linux / macOS 需要改 `render.py` 里的 `FONT_R` / `FONT_B` 常量指向本机中文字体
+- **中文字体**：自动探测，Windows 用微软雅黑，Linux 找 Noto Sans CJK / 文泉驿，macOS 找苹方
+  - 都找不到时改 `render.py` 顶部的 `FONT_R` / `FONT_B` 指向本机字体
 - 抓取不依赖 requests，渲染不依赖浏览器
 
 ### 已知的平台限制
 
-这套代码在 Windows 上开发。迁到 Linux/macOS 需要动两处：字体路径，以及 `set_wallpaper.ps1`（那个是 Windows 专用的）。
+这套代码在 Windows 上开发。迁到 Linux/macOS 只需处理 `set_wallpaper.ps1`（Windows 专用，换桌面壁纸那步），其余逻辑跨平台可用。
 
 ## 踩过的坑
 

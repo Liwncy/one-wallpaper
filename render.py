@@ -51,8 +51,29 @@ GAP = 40
 COL_MID = COL_X0 + 709             # 左右分栏的中缝
 RIGHT_X0 = COL_MID + GAP
 
-FONT_R = "C:/Windows/Fonts/msyh.ttc"
-FONT_B = "C:/Windows/Fonts/msyhbd.ttc"
+def _find_font(candidates):
+    """按顺序挑第一个存在的字体文件，跨平台兜底。"""
+    for p in candidates:
+        if pathlib.Path(p).exists():
+            return p
+    return candidates[0]
+
+
+# 中文字体：Windows 优先微软雅黑，其次黑体；Linux/macOS 走 Noto / 文泉驿 / 苹方
+FONT_R = _find_font([
+    "C:/Windows/Fonts/msyh.ttc",
+    "C:/Windows/Fonts/simhei.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+    "/System/Library/Fonts/PingFang.ttc",
+])
+FONT_B = _find_font([
+    "C:/Windows/Fonts/msyhbd.ttc",
+    "C:/Windows/Fonts/simhei.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+    "/System/Library/Fonts/PingFang.ttc",
+])
 _cache = {}
 
 
