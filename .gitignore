@@ -31,9 +31,7 @@ output/*
 logs/
 !logs/.gitkeep
 
-# ---- Lively 运行时烘焙出的图片与快照 ----
-# index.html / LivelyInfo.json 是源文件要提交；
-# 下面这些是 build_lively.py 每次跑出来的产物。
+# ---- Lively 运行时快照（页面源文件要提交）----
 lively/data.js
 lively/wife.jpg
 lively/bg.jpg
@@ -47,6 +45,10 @@ config.local.json
 .workbuddy/
 .claude/
 .cursor/
+
+# ---- Electron / Node ----
+node_modules/
+release/
 
 # ---- 编辑器 / 系统 ----
 .vscode/

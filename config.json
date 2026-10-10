@@ -2,11 +2,12 @@
   "city": "潍坊",
   "zodiac": "处女",
   "wife_id_mode": "today",
-
-  "resolution": [2560, 1440],
+  "resolution": [
+    2560,
+    1440
+  ],
   "ai_news_count": 7,
   "weather_forecast_days": 3,
-
   "theme": {
     "bg": "#0D1015",
     "panel": "#FFFFFF",
@@ -25,14 +26,12 @@
     "panel_border_alpha": 30,
     "label_alpha": 120
   },
-
   "apis": {
     "ai_news": "https://api.pearapi.ai/api/latest_ai_consultative",
     "today_wife": "https://api.pearapi.ai/api/today_wife",
     "dujitang": "https://api.pearapi.ai/api/dujitang",
     "xzys": "https://api.pearapi.ai/api/xzys/"
   },
-
   "sixty_s": {
     "instances": [
       "https://60s.crystelf.top",
@@ -50,25 +49,21 @@
     },
     "min_interval": 2.5
   },
-
   "fallback_weather": {
     "url": "https://api.open-meteo.com/v1/forecast",
     "latitude": 36.7311,
     "longitude": 119.1732
   },
-
   "request": {
     "timeout": 20,
     "retries": 3,
     "retry_delay": 3,
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
   },
-
   "schedule": {
     "daily_time": "06:00",
     "task_name": "DailyWallpaper"
   },
-
   "output": {
     "static_dir": "output",
     "cache_dir": "cache",
@@ -76,5 +71,238 @@
     "keep_days": 14,
     "set_wallpaper": true,
     "wallpaper_style": "Fill"
-  }
+  },
+  "grid": {
+    "cols": 12,
+    "rows": 8,
+    "gap": 20,
+    "margin": 40,
+    "taskbar": 45
+  },
+  "areas": [
+    {
+      "id": "wife",
+      "type": "custom",
+      "title": "立绘",
+      "enabled": true,
+      "col": 0,
+      "row": 0,
+      "colSpan": 4,
+      "rowSpan": 8,
+      "bleed": true,
+      "api": {
+        "url": "https://api.pearapi.ai/api/today_wife",
+        "query": {
+          "id": "{date}"
+        }
+      },
+      "display": "image",
+      "pick": {
+        "text": "",
+        "image": "data.image_url",
+        "items": "",
+        "item": "",
+        "rows": [],
+        "slots": {}
+      }
+    },
+    {
+      "id": "date",
+      "type": "custom",
+      "title": "日期",
+      "enabled": true,
+      "col": 4,
+      "row": 0,
+      "colSpan": 4,
+      "rowSpan": 2,
+      "bleed": false,
+      "api": {
+        "url": "https://60s.crystelf.top/v2/moyu"
+      },
+      "display": "fields",
+      "pick": {
+        "text": "",
+        "image": "",
+        "items": "",
+        "item": "",
+        "rows": [
+          {
+            "label": "农历月",
+            "path": "data.date.lunar.monthCN"
+          },
+          {
+            "label": "农历日",
+            "path": "data.date.lunar.dayCN"
+          },
+          {
+            "label": "干支",
+            "path": "data.date.lunar.yearGanZhi"
+          },
+          {
+            "label": "节气",
+            "path": "data.today.solarTerm"
+          },
+          {
+            "label": "下一假期",
+            "path": "data.nextHoliday.name"
+          },
+          {
+            "label": "一句",
+            "path": "data.moyuQuote"
+          }
+        ],
+        "slots": {}
+      }
+    },
+    {
+      "id": "weather",
+      "type": "custom",
+      "title": "天气",
+      "enabled": true,
+      "col": 8,
+      "row": 0,
+      "colSpan": 4,
+      "rowSpan": 2,
+      "bleed": false,
+      "api": {
+        "url": "https://60s.crystelf.top/v2/weather/forecast",
+        "query": {
+          "query": "潍坊",
+          "days": "3"
+        }
+      },
+      "display": "fields",
+      "pick": {
+        "text": "",
+        "image": "",
+        "items": "",
+        "item": "",
+        "rows": [
+          {
+            "label": "城市",
+            "path": "data.location.name"
+          },
+          {
+            "label": "天气",
+            "path": "data.daily_forecast.0.day_condition"
+          },
+          {
+            "label": "最高",
+            "path": "data.daily_forecast.0.max_temperature"
+          },
+          {
+            "label": "最低",
+            "path": "data.daily_forecast.0.min_temperature"
+          },
+          {
+            "label": "空气",
+            "path": "data.daily_forecast.0.air_quality"
+          },
+          {
+            "label": "日出",
+            "path": "data.sunrise_sunset.0.sunrise_desc"
+          }
+        ],
+        "slots": {}
+      }
+    },
+    {
+      "id": "news",
+      "type": "custom",
+      "title": "资讯",
+      "enabled": true,
+      "col": 4,
+      "row": 2,
+      "colSpan": 8,
+      "rowSpan": 3,
+      "bleed": false,
+      "api": {
+        "url": "https://api.pearapi.ai/api/latest_ai_consultative",
+        "limit": 7
+      },
+      "display": "list",
+      "pick": {
+        "text": "",
+        "image": "",
+        "items": "data.models_and_releases",
+        "item": "title",
+        "rows": [],
+        "slots": {}
+      }
+    },
+    {
+      "id": "quote",
+      "type": "custom",
+      "title": "一句话",
+      "enabled": true,
+      "col": 4,
+      "row": 5,
+      "colSpan": 4,
+      "rowSpan": 3,
+      "bleed": false,
+      "api": {
+        "url": "https://api.pearapi.ai/api/dujitang"
+      },
+      "display": "text",
+      "pick": {
+        "text": "",
+        "image": "",
+        "items": "",
+        "item": "",
+        "rows": [],
+        "slots": {}
+      }
+    },
+    {
+      "id": "zodiac",
+      "type": "custom",
+      "title": "星座",
+      "enabled": true,
+      "col": 8,
+      "row": 5,
+      "colSpan": 4,
+      "rowSpan": 3,
+      "bleed": false,
+      "api": {
+        "url": "https://api.pearapi.ai/api/xzys/",
+        "query": {
+          "xz": "处女"
+        }
+      },
+      "display": "fields",
+      "pick": {
+        "text": "",
+        "image": "",
+        "items": "",
+        "item": "",
+        "rows": [
+          {
+            "label": "短评",
+            "path": "data.shortcomment"
+          },
+          {
+            "label": "全文",
+            "path": "data.alltext"
+          },
+          {
+            "label": "幸运色",
+            "path": "data.luckycolor"
+          },
+          {
+            "label": "幸运数字",
+            "path": "data.luckynumber"
+          },
+          {
+            "label": "健康",
+            "path": "data.health"
+          },
+          {
+            "label": "讨论",
+            "path": "data.discuss"
+          }
+        ],
+        "slots": {}
+      }
+    }
+  ]
 }

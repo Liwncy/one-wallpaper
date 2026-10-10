@@ -1,0 +1,57 @@
+{
+  "name": "one-wallpaper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "配置网格并设为 Windows 桌面壁纸",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "build": "vite build",
+    "pack": "vite build && electron-builder --win dir",
+    "dist": "vite build && electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "app.onewallpaper.desktop",
+    "productName": "壁纸配置",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "shared/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "config.json",
+        "to": "config.json"
+      },
+      {
+        "from": "set_wallpaper.ps1",
+        "to": "set_wallpaper.ps1"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "壁纸配置"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "concurrently": "^9.2.1",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.3.5",
+    "vue": "^3.5.16",
+    "wait-on": "^8.0.3"
+  }
+}
