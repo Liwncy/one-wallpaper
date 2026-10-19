@@ -212,10 +212,10 @@ onMounted(async () => {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
+  object-fit: cover;
+  object-position: center center;
 }
-.fill-bleed { transform: scale(1.05); }
+.fill-bleed { transform: scale(1.08); }
 .topline { display: flex; align-items: baseline; min-height: calc(28px * var(--mul)); }
 .kicker { color: var(--hint); font-size: calc(18px * var(--mul)); font-weight: 700; letter-spacing: .16em; }
 .sheet {
