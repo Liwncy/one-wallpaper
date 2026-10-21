@@ -1,6 +1,16 @@
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
 const { spawn } = require("child_process");
+
+function remember(pngPath, line) {
+  try {
+    fs.appendFileSync(path.join(path.dirname(pngPath), "set.log"), `${line}\n`, "utf8");
+  } catch {
+    /* the wallpaper result still has to be returned */
+  }
+}
 
 function runPowerShell(script) {
   const body = `$ProgressPreference = 'SilentlyContinue'\n${script}`;
@@ -96,11 +106,29 @@ function setWallpaper(ps1, pngPath, style) {
       ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", ps1, "-Path", pngPath, "-Style", style || "Fill"],
       { windowsHide: true },
     );
+    let out = "";
     let err = "";
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      resolve(result);
+    };
+    child.stdout.on("data", (chunk) => { out += chunk.toString("utf8"); });
     child.stderr.on("data", (chunk) => { err += chunk.toString("utf8"); });
+    child.on("error", (error) => {
+      remember(pngPath, `${new Date().toISOString()} fail spawn ${error.message}`);
+      finish({ ok: false, error: error.message });
+    });
     child.on("close", (code) => {
-      if (code === 0) resolve({ ok: true });
-      else resolve({ ok: false, error: err.trim() || `设壁纸失败 ${code}` });
+      if (code === 0) {
+        remember(pngPath, `${new Date().toISOString()} ok`);
+        finish({ ok: true });
+        return;
+      }
+      const error = err.trim() || out.trim() || `设壁纸失败 ${code}`;
+      remember(pngPath, `${new Date().toISOString()} fail ${code} ${error}`);
+      finish({ ok: false, error });
     });
   });
 }

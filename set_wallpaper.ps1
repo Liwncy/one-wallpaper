@@ -45,6 +45,7 @@ Set-ItemProperty $key -Name TileWallpaper -Value $(if ($Style -eq 'Tile') { '1' 
 
 Add-Type -ReferencedAssemblies System.Drawing -TypeDefinition @"
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -95,25 +96,97 @@ public interface IOneDesktopWallpaper {
 public class OneDesktopWallpaper { }
 
 public static class OneWallpaperSetter {
+    delegate bool MonitorEnumProc(IntPtr monitor, IntPtr hdc, ref OneWallpaperRect rect, IntPtr data);
+
     [DllImport("user32.dll")]
     static extern bool SetProcessDPIAware();
 
-    public static string Apply(string path) {
-        SetProcessDPIAware();
+    [DllImport("user32.dll")]
+    static extern bool SetProcessDpiAwarenessContext(IntPtr value);
+
+    [DllImport("user32.dll")]
+    static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr clip, MonitorEnumProc proc, IntPtr data);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern bool SystemParametersInfo(int action, int param, string value, int ini);
+
+    static List<OneWallpaperRect> found;
+    static MonitorEnumProc enumProc;
+
+    static IOneDesktopWallpaper OpenWall() {
         var type = Type.GetTypeFromCLSID(new Guid("C2CF3110-460E-4fc1-B9D0-8A1C0C9CC4BD"));
-        var wall = (IOneDesktopWallpaper)Activator.CreateInstance(type);
+        return (IOneDesktopWallpaper)Activator.CreateInstance(type);
+    }
+
+    static bool OnMonitor(IntPtr monitor, IntPtr hdc, ref OneWallpaperRect rect, IntPtr data) {
+        found.Add(rect);
+        return true;
+    }
+
+    static OneWallpaperRect[] RectsFromDisplay() {
+        found = new List<OneWallpaperRect>();
+        enumProc = OnMonitor;
+        if (!EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, enumProc, IntPtr.Zero) || found.Count == 0)
+            throw new InvalidOperationException("No monitors.");
+        var rects = found.ToArray();
+        for (int i = 0; i < rects.Length; i++)
+            Console.WriteLine("monitor {0} {1},{2} {3}x{4}", i, rects[i].Left, rects[i].Top, rects[i].Right - rects[i].Left, rects[i].Bottom - rects[i].Top);
+        return rects;
+    }
+
+    static OneWallpaperRect[] RectsFromWall(IOneDesktopWallpaper wall) {
+        uint count = wall.GetMonitorDevicePathCount();
+        if (count == 0) throw new InvalidOperationException("No monitors.");
+        var rects = new OneWallpaperRect[count];
+        for (uint i = 0; i < count; i++) {
+            string id = wall.GetMonitorDevicePathAt(i);
+            wall.GetMonitorRECT(id, out rects[i]);
+            Console.WriteLine("monitor {0} {1},{2} {3}x{4}", i, rects[i].Left, rects[i].Top, rects[i].Right - rects[i].Left, rects[i].Bottom - rects[i].Top);
+        }
+        return rects;
+    }
+
+    static void Remember(string dest) {
+        Microsoft.Win32.Registry.SetValue(@"HKEY_CURRENT_USER\Control Panel\Desktop", "Wallpaper", dest);
+        Microsoft.Win32.Registry.SetValue(@"HKEY_CURRENT_USER\Control Panel\Desktop", "WallpaperStyle", "22");
+        Microsoft.Win32.Registry.SetValue(@"HKEY_CURRENT_USER\Control Panel\Desktop", "TileWallpaper", "0");
+    }
+
+    static string Place(IOneDesktopWallpaper wall, string dest) {
+        Remember(dest);
+        try {
+            if (wall == null) wall = OpenWall();
+            wall.SetPosition(OneWallpaperPosition.Span);
+            wall.SetWallpaper(null, dest);
+            return "com";
+        } catch (Exception ex) {
+            Console.WriteLine("place com failed: " + ex.GetType().Name);
+            if (!SystemParametersInfo(20, 0, dest, 1 | 2))
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            return "spi";
+        }
+    }
+
+    public static string Apply(string path) {
+        try { SetProcessDpiAwarenessContext((IntPtr)(-4)); } catch { }
+        SetProcessDPIAware();
+        IOneDesktopWallpaper wall = null;
+        OneWallpaperRect[] rects;
+        try {
+            wall = OpenWall();
+            rects = RectsFromWall(wall);
+        } catch (Exception ex) {
+            Console.WriteLine("monitors com failed: " + ex.GetType().Name);
+            wall = null;
+            rects = RectsFromDisplay();
+        }
         using (var src = new Bitmap(path)) {
-            uint count = wall.GetMonitorDevicePathCount();
-            var rects = new OneWallpaperRect[count];
             int minL = int.MaxValue, minT = int.MaxValue, maxR = int.MinValue, maxB = int.MinValue;
-            for (uint i = 0; i < count; i++) {
-                string id = wall.GetMonitorDevicePathAt(i);
-                wall.GetMonitorRECT(id, out rects[i]);
+            for (int i = 0; i < rects.Length; i++) {
                 if (rects[i].Left < minL) minL = rects[i].Left;
                 if (rects[i].Top < minT) minT = rects[i].Top;
                 if (rects[i].Right > maxR) maxR = rects[i].Right;
                 if (rects[i].Bottom > maxB) maxB = rects[i].Bottom;
-                Console.WriteLine("monitor {0} {1},{2} {3}x{4}", i, rects[i].Left, rects[i].Top, rects[i].Right - rects[i].Left, rects[i].Bottom - rects[i].Top);
             }
             int canvasW = Math.Max(1, maxR - minL);
             int canvasH = Math.Max(1, maxB - minT);
@@ -123,7 +196,7 @@ public static class OneWallpaperSetter {
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.Clear(Color.FromArgb(13, 16, 21));
-                for (uint i = 0; i < count; i++) {
+                for (int i = 0; i < rects.Length; i++) {
                     int w = rects[i].Right - rects[i].Left;
                     int h = rects[i].Bottom - rects[i].Top;
                     if (w < 1 || h < 1) continue;
@@ -139,11 +212,9 @@ public static class OneWallpaperSetter {
                 bmp.SetResolution(96, 96);
                 bmp.Save(dest, ImageFormat.Png);
             }
-            wall.SetPosition(OneWallpaperPosition.Span);
-            wall.SetWallpaper(null, dest);
             Console.WriteLine("canvas {0}x{1}", canvasW, canvasH);
+            return Place(wall, dest);
         }
-        return "ok";
     }
 }
 "@
@@ -153,6 +224,7 @@ if ($Style -ne 'Fill') {
     Write-Error "Only Fill is placed per monitor."
     exit 1
 }
-[OneWallpaperSetter]::Apply($full) | Out-Null
-
-Write-Output "Wallpaper set: $full"
+$placed = [OneWallpaperSetter]::Apply($full)
+$log = Join-Path (Split-Path -Parent $full) 'set.log'
+Add-Content -LiteralPath $log -Value ((Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' ' + $placed) -Encoding utf8
+Write-Output "Wallpaper set: $full ($placed)"
