@@ -56,11 +56,25 @@ $info = Get-ScheduledTaskInfo -TaskName ${psQuote(name)}
   });
 }
 
-function taskInstall(name, dailyTime, command) {
+function taskInstall(name, dailyTime, command, apply) {
   const args = String((command && command.args) || "").trim();
   const action = args
     ? `New-ScheduledTaskAction -Execute ${psQuote(command.execute)} -Argument ${psQuote(args)}`
     : `New-ScheduledTaskAction -Execute ${psQuote(command.execute)}`;
+  const applyArgs = String((apply && apply.args) || "").trim();
+  const applyAction = apply
+    ? `New-ScheduledTaskAction -Execute ${psQuote(apply.execute)} -Argument ${psQuote(applyArgs)}`
+    : "";
+  const unlockName = `${name}Unlock`;
+  const unlockScript = apply ? `
+$apply = ${applyAction}
+$stateClass = Get-CimClass -Namespace Root/Microsoft/Windows/TaskScheduler -ClassName MSFT_TaskSessionStateChangeTrigger
+$unlock = New-CimInstance -CimClass $stateClass -ClientOnly
+$unlock.StateChange = 8
+$unlock.UserId = "$env:USERDOMAIN\\$env:USERNAME"
+$unlock.Delay = 'PT15S'
+Register-ScheduledTask -TaskName ${psQuote(unlockName)} -Action $apply -Trigger $unlock -Principal $principal -Settings $settings -Force | Out-Null
+` : "";
   const script = `
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -69,6 +83,7 @@ $trigger = New-ScheduledTaskTrigger -Daily -At ${psQuote(dailyTime)}
 $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\\$env:USERNAME" -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew
 Register-ScheduledTask -TaskName ${psQuote(name)} -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+${unlockScript}
 'ok'
 `;
   return runPowerShell(script).then(({ code, out, err }) => {
@@ -81,8 +96,10 @@ Register-ScheduledTask -TaskName ${psQuote(name)} -Action $action -Trigger $trig
 
 function taskRemove(name) {
   const script = `
-$task = Get-ScheduledTask -TaskName ${psQuote(name)} -ErrorAction SilentlyContinue
-if ($task) { Unregister-ScheduledTask -TaskName ${psQuote(name)} -Confirm:$false }
+foreach ($name in @(${psQuote(name)}, ${psQuote(`${name}Unlock`)})) {
+  $task = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
+  if ($task) { Unregister-ScheduledTask -TaskName $name -Confirm:$false }
+}
 'ok'
 `;
   return runPowerShell(script).then(({ code, err }) => {

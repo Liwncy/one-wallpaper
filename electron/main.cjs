@@ -95,6 +95,16 @@ function launchCommand() {
   return { execute: process.execPath, args: `"${projectRoot()}" --generate` };
 }
 
+function applyCommand() {
+  const store = appPaths();
+  const root = process.env.SystemRoot || "C:\\Windows";
+  const powershell = path.join(root, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+  return {
+    execute: powershell,
+    args: `-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "${store.ps1}" -Path "${store.png}" -Style Fill`,
+  };
+}
+
 function loadPage(win, hash) {
   const distIndex = path.join(__dirname, "../dist/index.html");
   const useFile = app.isPackaged || (headless && fs.existsSync(distIndex));
@@ -317,7 +327,7 @@ function registerIpc() {
       cfg.schedule.daily_time = dailyTime;
       writeConfig(cfg);
     }
-    return schedule.taskInstall(cfg.schedule.task_name, cfg.schedule.daily_time, launchCommand());
+    return schedule.taskInstall(cfg.schedule.task_name, cfg.schedule.daily_time, launchCommand(), applyCommand());
   });
   ipcMain.handle("task:remove", () => schedule.taskRemove((readConfig().schedule || {}).task_name || "DailyWallpaper"));
   ipcMain.handle("preview:url", () => previewUrl());

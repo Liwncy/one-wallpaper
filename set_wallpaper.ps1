@@ -107,6 +107,9 @@ public static class OneWallpaperSetter {
     [DllImport("user32.dll")]
     static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr clip, MonitorEnumProc proc, IntPtr data);
 
+    [DllImport("user32.dll")]
+    static extern int GetSystemMetrics(int index);
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     static extern bool SystemParametersInfo(int action, int param, string value, int ini);
 
@@ -123,14 +126,34 @@ public static class OneWallpaperSetter {
         return true;
     }
 
+    static void PrintRects(string source, OneWallpaperRect[] rects) {
+        for (int i = 0; i < rects.Length; i++)
+            Console.WriteLine("monitor {0} {1} {2},{3} {4}x{5}", source, i, rects[i].Left, rects[i].Top, rects[i].Right - rects[i].Left, rects[i].Bottom - rects[i].Top);
+    }
+
+    static bool CoversDesktop(OneWallpaperRect[] rects) {
+        if (rects == null || rects.Length == 0) return false;
+        int minL = int.MaxValue, minT = int.MaxValue, maxR = int.MinValue, maxB = int.MinValue;
+        for (int i = 0; i < rects.Length; i++) {
+            if (rects[i].Left < minL) minL = rects[i].Left;
+            if (rects[i].Top < minT) minT = rects[i].Top;
+            if (rects[i].Right > maxR) maxR = rects[i].Right;
+            if (rects[i].Bottom > maxB) maxB = rects[i].Bottom;
+        }
+        int left = GetSystemMetrics(76);
+        int top = GetSystemMetrics(77);
+        int width = GetSystemMetrics(78);
+        int height = GetSystemMetrics(79);
+        return minL == left && minT == top && (maxR - minL) == width && (maxB - minT) == height;
+    }
+
     static OneWallpaperRect[] RectsFromDisplay() {
         found = new List<OneWallpaperRect>();
         enumProc = OnMonitor;
         if (!EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, enumProc, IntPtr.Zero) || found.Count == 0)
             throw new InvalidOperationException("No monitors.");
         var rects = found.ToArray();
-        for (int i = 0; i < rects.Length; i++)
-            Console.WriteLine("monitor {0} {1},{2} {3}x{4}", i, rects[i].Left, rects[i].Top, rects[i].Right - rects[i].Left, rects[i].Bottom - rects[i].Top);
+        PrintRects("display", rects);
         return rects;
     }
 
@@ -141,8 +164,8 @@ public static class OneWallpaperSetter {
         for (uint i = 0; i < count; i++) {
             string id = wall.GetMonitorDevicePathAt(i);
             wall.GetMonitorRECT(id, out rects[i]);
-            Console.WriteLine("monitor {0} {1},{2} {3}x{4}", i, rects[i].Left, rects[i].Top, rects[i].Right - rects[i].Left, rects[i].Bottom - rects[i].Top);
         }
+        PrintRects("com", rects);
         return rects;
     }
 
@@ -171,14 +194,24 @@ public static class OneWallpaperSetter {
         try { SetProcessDpiAwarenessContext((IntPtr)(-4)); } catch { }
         SetProcessDPIAware();
         IOneDesktopWallpaper wall = null;
-        OneWallpaperRect[] rects;
+        OneWallpaperRect[] live = null;
         try {
             wall = OpenWall();
-            rects = RectsFromWall(wall);
+            live = RectsFromWall(wall);
         } catch (Exception ex) {
             Console.WriteLine("monitors com failed: " + ex.GetType().Name);
             wall = null;
-            rects = RectsFromDisplay();
+        }
+        OneWallpaperRect[] display = null;
+        try {
+            display = RectsFromDisplay();
+        } catch (Exception ex) {
+            Console.WriteLine("monitors display failed: " + ex.GetType().Name);
+        }
+        OneWallpaperRect[] rects = CoversDesktop(live) ? live : display;
+        if (!CoversDesktop(rects)) {
+            Console.WriteLine("desktop not ready");
+            return "skip";
         }
         using (var src = new Bitmap(path)) {
             int minL = int.MaxValue, minT = int.MaxValue, maxR = int.MinValue, maxB = int.MinValue;
@@ -213,7 +246,7 @@ public static class OneWallpaperSetter {
                 bmp.Save(dest, ImageFormat.Png);
             }
             Console.WriteLine("canvas {0}x{1}", canvasW, canvasH);
-            return Place(wall, dest);
+            return Place(wall, dest) + " " + canvasW + "x" + canvasH;
         }
     }
 }
